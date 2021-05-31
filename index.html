@@ -42,31 +42,70 @@
   </fieldset>
 
   <section id="error-btns">
-    <button>Console Log Demo</button>
-    <button>Console Error Demo</button>
-    <button>Console Dir</button>
-    <button>Console dirxml</button>
-    <button>Console Group Start</button>
-    <button>Console Group End</button>
-    <button>Console Table</button>
-    <button>Start Timer</button>
-    <button>End Timer</button>
-    <button>Console Trace</button>
-    <button>Trigger a Global Error</button>
+    <button onclick="console.log('Here is the demo for console log')">Console Log Demo</button>
+    <button onclick="console.error('Oops! An error here')">Console Error Demo</button>
+    <button onclick="console.dir(document.head)">Console Dir</button>
+    <button onclick="console.dirxml(document.head)">Console dirxml</button>
+    <button onclick="console.group('Debug issue #2 starts here'); console.log('First debug')">Console Group Start</button>
+    <button onclick="console.groupEnd('It ends here! HAHA'); console.log('Outside group');">Console Group End</button>
+    <button onclick="console.table([{f: 'Harvey', l: 'Specter'}, {f: 'Mike', l: 'Ross'}])">Console Table</button>
+    <button onclick="console.time();">Start Timer</button>
+    <button onclick="console.timeEnd();">End Timer</button>
+    <button onclick="
+    const first = () => console.trace();
+    const second = () => first();
+    const third = () => second();
+    third();">Console Trace</button>
+    <button onclick="console.log(undefinedvar)">Trigger a Global Error</button>
   </section>
 
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+<script>
+  window.TrackJS && TrackJS.install({ 
+    token: "c09ae21fb58b42918c46e793393c43ba"
+    // for more configuration options, see https://docs.trackjs.com
+  });
+</script>
   <script>
+    class EmptyInputError extends Error{
+      constructor(message){
+        super(message);
+        this.name = 'EmptyInputError';
+      }
+    }
     let calculateBtn = document.querySelector('#calculate');
     calculateBtn.addEventListener('click', () => {
       let output = document.querySelector('output');
       let firstNum = document.querySelector('#first-num').value;
       let secondNum = document.querySelector('#second-num').value;
       let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      try{
+        if (operator === '/' && secondNum === '0'){
+          throw Error('Divide By Zero is invalid');
+        }
+        output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      } catch(error){
+        // Triggered when the user leaves the inputs blank
+        if (error instanceof SyntaxError) {
+          if ((firstNum === "") || (secondNum === "")) throw new EmptyInputError('Oops! You caused an error. Please enter valid operands');
+          else console.error('Incorrect input format');
+        }
+        else throw error // Rethrow error
+      } finally {
+        alert('Your result was evaluated. Be happy if you got your result. Otherwise please check your console for errors you caused')
+      }
+      
+      if (operator === '/' && secondNum === '0'){
+        throw Error('Divide By Zero is invalid');
+      }
     });
 
+    window.onerror = (msg, url, lineNo, columnNo, error) => {
+      console.error(`Caught Global Error`, msg)
+    }
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
     // TODO - Make buttons functional
+
   </script>
 </body>
 </html>
